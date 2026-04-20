@@ -9,12 +9,19 @@ namespace HorrorGame.PlayerController
         [SerializeField] private float walkSpeed = 2f;
         [SerializeField] private float animBlendSpeed = 8.9f;
 
+        [Header("Gravity")]
+        [SerializeField] private float gravity = -9.81f;
+        [SerializeField] private float groundedForce = -2f;
+
+        private float yVelocity;
+
         [Header("Camera")]
         [SerializeField] private Transform cameraRoot;
         [SerializeField] private Transform fpCamera;
         [SerializeField] private float upperLimit = -40f;
         [SerializeField] private float bottomLimit = 70f;
         [SerializeField] private float mouseSensitivity = 21.9f;
+
 
         private InputManager inputManager;
         private Animator animator;
@@ -72,12 +79,28 @@ namespace HorrorGame.PlayerController
             currentVelocity = Vector2.Lerp(currentVelocity, input * walkSpeed,
                                            animBlendSpeed * Time.deltaTime);
 
-            // Calculate movement direction in world space
-            moveDirection = transform.TransformDirection(
+            // Ground check
+            if (characterController.isGrounded)
+            {
+                if (yVelocity < 0)
+                {
+                    // Small downward force keeps player stuck to ground
+                    yVelocity = groundedForce;
+                }
+            }
+            else
+            {
+                // Apply gravity over time
+                yVelocity += gravity * Time.deltaTime;
+            }
+
+            // Combine horizontal + vertical movement
+            Vector3 horizontalMove = transform.TransformDirection(
                 new Vector3(currentVelocity.x, 0f, currentVelocity.y));
 
-            // Move using CharacterController (includes gravity automatically if you add it)
-            characterController.Move(moveDirection * Time.deltaTime);
+            Vector3 finalMove = horizontalMove + Vector3.up * yVelocity;
+
+            characterController.Move(finalMove * Time.deltaTime);
 
             // Update Animator
             animator.SetFloat(xVelHash, currentVelocity.x);
