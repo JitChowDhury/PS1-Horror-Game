@@ -25,10 +25,10 @@ namespace HorrorGame.Manager
             lookAction = currentMap.FindAction("Look");
 
             moveAction.performed += onMove;
-            moveAction.performed += onLook;
+            lookAction.performed += onLook;
 
             moveAction.canceled += onMove;
-            moveAction.canceled += onLook;
+            lookAction.canceled += onLook;
         }
         private void onMove(InputAction.CallbackContext context)
         {
